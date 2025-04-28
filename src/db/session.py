@@ -5,7 +5,7 @@ from sqlmodel import SQLModel
 
 DATABASE_URL = settings.DATABASE_URL
 
-engine = create_async_engine(DATABASE_URL, echo=True)  # proper async engine
+engine = create_async_engine(DATABASE_URL, echo=True)
 
 async_session = sessionmaker(
     bind=engine,

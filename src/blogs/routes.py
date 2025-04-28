@@ -1,46 +1,40 @@
-from fastapi import APIRouter, HTTPException
-from .schema import Blog, BlogCreate
+from fastapi import APIRouter, HTTPException, Depends
+from .schema import Blog, CreateBlog, UpdateBlog
+from .services import BlogService
 from typing import List
-from datetime import datetime
+from src.db.model import BlogModel
+from src.db.session import get_session
+from sqlalchemy.ext.asyncio.session import AsyncSession
 
 blog_router = APIRouter()
 
-Blogs: List[Blog] = []
-id_counter: int = 1
+blog_service = BlogService()
 
 @blog_router.get("/", response_model=List[Blog])
-def get_blogs():
-    return Blogs
+async def get_blogs(session: AsyncSession = Depends(get_session)):
+    return await blog_service.get_all_blogs(session)
 
 @blog_router.get("/{blog_id}", response_model=Blog)
-def get_blog(blog_id: int):
-    for blog in Blogs:
-        if blog.id == blog_id:
-            return blog
+async def get_blog(blog_id: str, session: AsyncSession = Depends(get_session)):
+    blog = await blog_service.get_blog_by_id(blog_id, session)
+    if blog:
+        return blog
     raise HTTPException(status_code=404, detail="Blog not found")
 
 @blog_router.post("/", response_model=Blog)
-def create_blog(blog: BlogCreate):
-    global id_counter
-    new_blog = Blog(id=id_counter, **blog.model_dump())
-    Blogs.append(new_blog)
-    id_counter += 1
-    return new_blog
+async def create_blog(blog: CreateBlog, session: AsyncSession = Depends(get_session)):
+    return await blog_service.create_blog(blog, session)
 
 @blog_router.put("/{blog_id}", response_model=Blog)
-def update_blog(blog_id: int, update_blog: BlogCreate):
-    for i, blog in enumerate(Blogs):
-        if blog.id == blog_id:
-            for key, value in update_blog.model_dump().items():
-                setattr(blog, key, value)
-            blog.updated_at = datetime.now()
-            return blog
+async def update_blog(blog_id: str, update_blog: UpdateBlog, session: AsyncSession = Depends(get_session)):
+    blog = await blog_service.update_blog(blog_id, update_blog, session)
+    if blog:
+        return blog
     raise HTTPException(status_code=404, detail="Blog not found")
 
 @blog_router.delete("/{blog_id}", response_model=Blog)
-def delete_blog(blog_id: int):
-    for i, blog in enumerate(Blogs):
-        if blog.id == blog_id:
-            deleted_blog = Blogs.pop(i)
-            return deleted_blog
+async def delete_blog(blog_id: str, session: AsyncSession = Depends(get_session)):
+    blog = await blog_service.delete_blog(blog_id, session)
+    if blog:
+        return blog
     raise HTTPException(status_code=404, detail="Blog not found")

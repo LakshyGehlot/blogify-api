@@ -41,6 +41,6 @@ class BlogService:
         if blog_to_delete is not None:
             await session.delete(blog_to_delete)
             await session.commit()
-            return {}
+            return blog_to_delete
         else:
             return None

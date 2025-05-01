@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-from src.blogs.routes import blog_router
 from src.db.session import init_db, engine
 from contextlib import asynccontextmanager
+
+from .blogs.routes import blog_router
+from .auth.routes import auth_router
 
 tags_metadata = [
     {
@@ -25,3 +27,4 @@ app = FastAPI(
 )
 
 app.include_router(blog_router, prefix="/blogs", tags=["blogs"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])

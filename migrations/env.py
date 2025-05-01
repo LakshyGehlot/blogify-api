@@ -10,7 +10,7 @@ from alembic import context
 
 from src.config import settings
 from sqlmodel import SQLModel
-from src.db.model import BlogModel
+from src.db.model import BlogModel, UserModel
 
 DATABASE_URL = settings.DATABASE_URL
 
